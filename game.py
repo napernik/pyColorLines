@@ -3,19 +3,20 @@ import graphics, gameState
 
 pygame.init()
 
-screen = pygame.display.set_mode(graphics.screen_size)
+graphics.init()
 
 gameState.addRandomBalls(10)
 
 def redraw():
-    graphics.draw_scene(screen, gameState.balls)
+    graphics.draw_scene(gameState)
     pygame.display.flip()
 
 def onCellClick(col, row):
-    gameState.balls[col][row] = 2
-    redraw()
+    gameState.onCellClick(col, row, redraw)
     
 redraw()
+
+timeCounter = 0
 
 while 1:
     for event in pygame.event.get():
@@ -24,14 +25,9 @@ while 1:
             if event.button == 1:
                 graphics.check_board_click(event.pos[0], event.pos[1], onCellClick) 
 
+    timeCounter += 1
+    if gameState.is_selected:
+        graphics.animateSelectedBall(gameState.balls, gameState.selected_ball, timeCounter)
+        
+
     pygame.time.wait(50)
-    # ballrect = ballrect.move(speed)
-    # if ballrect.left < 0 or ballrect.right > width:
-    #     speed[0] = -speed[0]
-    # if ballrect.top < 0 or ballrect.bottom > height:
-    #     speed[1] = -speed[1]
- 
-    # screen.fill(red)
-    # screen.blit(ball, ballrect)
-    # #pygame.display.flip()
-    # pygame.display.update(ballrect)
