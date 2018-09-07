@@ -2,8 +2,9 @@ import sys, math, pygame
 import graphics, gameState
 
 pygame.init()
-
 graphics.init()
+
+pygame.display.set_caption('Color Lines')
 
 gameState.addRandomBalls(5, 3)
 
@@ -30,4 +31,4 @@ while 1:
         graphics.animateSelectedBall(gameState.balls, gameState.selected_ball, timeCounter)
         
 
-    pygame.time.wait(50)
+    pygame.time.wait(100)

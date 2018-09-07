@@ -13,16 +13,22 @@ pending_ball_image_size = 20
 pending_ball_image_offset = (square_side - pending_ball_image_size) / 2 - ball_diagonal_offset
 
 # Grid and screen sizes
-grid_left = 100
+grid_left = 30
 grid_top = 50
 
 grid_right = grid_left + square_side * square_count
 grid_bottom = grid_top + square_side * square_count
 
-grid_right_margin = 100
-grid_bottom_margin = 50
+grid_right_margin = 30
+grid_bottom_margin = 30
 
 screen_size = screen_width, screen_height = grid_right + grid_right_margin, grid_bottom + grid_bottom_margin
+
+# Score text
+pygame.font.init()
+scoreFont = pygame.font.SysFont('Comic Sans MS', 30)
+scoreColor = (43, 91, 132)
+scoreCoords = (30, 5)
 
 def init():
     global screen
@@ -94,9 +100,13 @@ def draw_scene(gameState):
             else:
                 draw_tile(col, row, ball_color, 2, False)
 
+    scoreText = 'Score: ' + str(gameState.score)
+    textSurface = scoreFont.render(scoreText, False, scoreColor)
+    screen.blit(textSurface, scoreCoords)
+
 def animateSelectedBall(balls, coords, timeCounter):
     color = balls[coords[0]][coords[1]]
-    shadowOffset = ball_diagonal_offset + shadow_animation_movement_range * (1 + math.sin(timeCounter / 5)) / 2
+    shadowOffset = ball_diagonal_offset + shadow_animation_movement_range * (1 + math.sin(timeCounter / 2.5)) / 2
     updateArea = draw_tile(coords[0], coords[1], color, shadowOffset)
     pygame.display.update(updateArea)
     
@@ -120,6 +130,8 @@ ball_images = (
 pending_ball_images = []
 
 for imageIndex in range(len(ball_images)):
-    pending_ball_images.append(pygame.transform.scale(ball_images[imageIndex], (pending_ball_image_size, pending_ball_image_size)))
+    newSize = (pending_ball_image_size, pending_ball_image_size)
+    #pending_ball_images.append(pygame.transform.smoothscale(ball_images[imageIndex], newSize))
+    pending_ball_images.append(pygame.transform.scale(ball_images[imageIndex], newSize))
 
 ball_shadow_image = generate_shadow_image()
