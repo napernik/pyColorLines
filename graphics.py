@@ -9,6 +9,10 @@ square_count = 9
 ball_diagonal_offset = -2
 shadow_animation_movement_range = 5
 
+pending_ball_image_size = 20
+pending_ball_image_offset = (square_side - pending_ball_image_size) / 2 - ball_diagonal_offset
+
+# Grid and screen sizes
 grid_left = 100
 grid_top = 50
 
@@ -28,6 +32,9 @@ def init():
 background_color = 200, 200, 200
 
 emptySquare = pygame.image.load("square.png")
+
+def add_diagonal_offset(coords, value):
+    return (coords[0] + value, coords[1] + value)
 
 def square_coordinates(col, row):
     return grid_left + square_side * col, grid_top + square_side * row
@@ -63,12 +70,16 @@ def generate_shadow_image():
                 image.set_at((ball_left + x, ball_top + y), (shadow_color, shadow_color, shadow_color))
     return image 
 
-def draw_tile(col, row, ball_color, shadowOffset):
+def draw_tile(col, row, ball_color, shadowOffset, isPendingBall = False):
     coord = square_coordinates(col, row)
     screen.blit(emptySquare, coord)
     if ball_color > 0:
-        screen.blit(ball_shadow_image, (coord[0] + shadowOffset, coord[1] + shadowOffset))
-        screen.blit(ball_images[ball_color - 1], coord)
+        if not isPendingBall:
+            screen.blit(ball_shadow_image, add_diagonal_offset(coord, shadowOffset))
+            screen.blit(ball_images[ball_color - 1], coord)
+        else:
+            screen.blit(pending_ball_images[ball_color - 1], add_diagonal_offset(coord, pending_ball_image_offset))
+
     return (coord[0], coord[1], square_side, square_side)
 
 
@@ -77,7 +88,11 @@ def draw_scene(gameState):
     for col in range(square_count):
         for row in range(square_count):
             ball_color = gameState.balls[col][row]
-            draw_tile(col, row, ball_color, 2)
+            pending_ball_color = gameState.pending_balls[col][row]
+            if pending_ball_color > 0:
+                draw_tile(col, row, pending_ball_color, 2, True)
+            else:
+                draw_tile(col, row, ball_color, 2, False)
 
 def animateSelectedBall(balls, coords, timeCounter):
     color = balls[coords[0]][coords[1]]
@@ -100,6 +115,11 @@ ball_images = (
     generate_ball_image(255, 255, 0),
     generate_ball_image(0, 255, 255),
     generate_ball_image(255, 0, 255)
-)    
+)
+
+pending_ball_images = []
+
+for imageIndex in range(len(ball_images)):
+    pending_ball_images.append(pygame.transform.scale(ball_images[imageIndex], (pending_ball_image_size, pending_ball_image_size)))
 
 ball_shadow_image = generate_shadow_image()
