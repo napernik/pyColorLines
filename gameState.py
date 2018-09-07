@@ -14,6 +14,8 @@ selected_ball = (-1, -1)
 
 score=0
 
+isGameOver = False
+
 # 0 points for less than 5 balls, 5 for 5, 7 for 6, 10 for 7, 14 for 8
 def getRewardScore(sequenceLength): 
     if sequenceLength < 5:
@@ -71,9 +73,54 @@ def consume_consequent_balls(startPosition, getNextPosition, balls_to_remove):
         
         position = nextPosition
 
+def removeAlignedBalls():
+    # Remove aligned 5+ balls and update score
+    balls_to_remove = getEmptySquareMatrix(square_count)
+
+    # Vertical rows
+    for col in range(square_count):
+        consume_consequent_balls((col, 0), lambda position : (position[0], position[1] + 1), balls_to_remove)
+
+    # Horizontal rows
+    for row in range(square_count):
+        consume_consequent_balls((0, row), lambda position : (position[0] + 1, position[1]), balls_to_remove)
+
+    # Down-Right diagonal
+    getNextPosition = lambda position : (position[0] + 1, position[1] + 1)
+    for col in range(square_count):
+        consume_consequent_balls((col, 0), getNextPosition, balls_to_remove)
+    for row in range(square_count - 1):
+        consume_consequent_balls((0, row + 1), getNextPosition, balls_to_remove)
+
+    # Down-Left diagonal
+    getNextPosition = lambda position : (position[0] - 1, position[1] + 1)
+    for col in range(square_count):
+        consume_consequent_balls((col, 0), getNextPosition, balls_to_remove)
+    for row in range(square_count - 1):
+        consume_consequent_balls((square_count - 1, row + 1), getNextPosition, balls_to_remove)            
+
+    totalConsumed = 0
+    for col in range(square_count):
+        for row in range(square_count):
+            if balls_to_remove[col][row] == 1:
+                balls[col][row] = 0
+                totalConsumed += 1
+
+    return totalConsumed
+
+def materializePendingBalls():
+    for col in range(square_count):
+        for row in range(square_count):
+            color = pending_balls[col][row]
+            if (color > 0) :
+                balls[col][row] = color
+                pending_balls[col][row] = 0
+
+
 def onTileClick(col, row, redrawFunc):
     global is_selected
     global selected_ball
+    global isGameOver
     target = balls[col][row]
     if target > 0:
         selected_ball = (col, row)
@@ -91,47 +138,21 @@ def onTileClick(col, row, redrawFunc):
         balls[selected_ball[0]][selected_ball[1]] = 0
         is_selected = False
 
-        # Materializing pending balls
-        for col in range(square_count):
-            for row in range(square_count):
-                color = pending_balls[col][row]
-                if (color > 0) :
-                    balls[col][row] = color
-                    pending_balls[col][row] = 0
+        ballsRemoved = removeAlignedBalls()
 
-        # Remove aligned 5+ balls and update score
-        balls_to_remove = getEmptySquareMatrix(square_count)
+        if ballsRemoved == 0:
+            materializePendingBalls()
+            ballsRemoved = removeAlignedBalls()
 
-        # Vertical rows
-        for col in range(square_count):
-            consume_consequent_balls((col, 0), lambda position : (position[0], position[1] + 1), balls_to_remove)
+            if ballsRemoved == 0:
+                # If nothing is removed - adding new pending balls
+                freeTilesLeft = addRandomBalls(0, 3)
+                if freeTilesLeft == 0:
+                    materializePendingBalls()
+                    ballsRemoved = removeAlignedBalls()
 
-        # Horizontal rows
-        for row in range(square_count):
-            consume_consequent_balls((0, row), lambda position : (position[0] + 1, position[1]), balls_to_remove)
-
-        # Down-Right diagonal
-        getNextPosition = lambda position : (position[0] + 1, position[1] + 1)
-        for col in range(square_count):
-            consume_consequent_balls((col, 0), getNextPosition, balls_to_remove)
-        for row in range(square_count - 1):
-            consume_consequent_balls((0, row + 1), getNextPosition, balls_to_remove)
-
-        # Down-Left diagonal
-        getNextPosition = lambda position : (position[0] - 1, position[1] + 1)
-        for col in range(square_count):
-            consume_consequent_balls((col, 0), getNextPosition, balls_to_remove)
-        for row in range(square_count - 1):
-            consume_consequent_balls((square_count - 1, row + 1), getNextPosition, balls_to_remove)            
-
-        for col in range(square_count):
-            for row in range(square_count):
-                if balls_to_remove[col][row] == 1:
-                    balls[col][row] = 0
-
-        # Adding new pending balls
-        freeTilesLeft = addRandomBalls(0, 3)
-
-        #if there's no spots left -> materialize -> if there're still no left -> declare game over and announce the final score
+                    if ballsRemoved == 0:
+                        # When there're no available moves -> Game Over!
+                        isGameOver = True
 
         redrawFunc()
