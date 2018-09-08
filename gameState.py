@@ -10,7 +10,7 @@ balls = getEmptySquareMatrix(square_count)
 pending_balls =  getEmptySquareMatrix(square_count)
 
 is_selected = False
-selected_ball = (-1, -1)
+selected_position = (-1, -1)
 
 score=0
 
@@ -77,6 +77,7 @@ def removeAlignedBalls():
     # Remove aligned 5+ balls and update score
     balls_to_remove = getEmptySquareMatrix(square_count)
 
+
     # Vertical rows
     for col in range(square_count):
         consume_consequent_balls((col, 0), lambda position : (position[0], position[1] + 1), balls_to_remove)
@@ -116,26 +117,48 @@ def materializePendingBalls():
                 balls[col][row] = color
                 pending_balls[col][row] = 0
 
+def getReachableTileMap(position):
+    reachableTiles = getEmptySquareMatrix(square_count)
+    expanded = True
+    reachableTiles[position[0]][position[1]] = 1
+    while expanded:
+        expanded = False
+        for col in range(square_count):
+            for row in range(square_count):
+                if reachableTiles[col][row] == 0 and balls[col][row] == 0 and \
+                   ((col > 0 and reachableTiles[col - 1][row] == 1) or
+                    (col < square_count - 1 and reachableTiles[col + 1][row] == 1) or
+                    (row > 0 and reachableTiles[col][row - 1] == 1) or
+                    (row < square_count - 1 and reachableTiles[col][row + 1] == 1)
+                    ):
+                    reachableTiles[col][row] = 1
+                    expanded = True
+    return reachableTiles
 
 def onTileClick(col, row, redrawFunc):
     global is_selected
-    global selected_ball
+    global selected_position
     global isGameOver
     target = balls[col][row]
     if target > 0:
-        selected_ball = (col, row)
+        selected_position = (col, row)
         is_selected = True
         redrawFunc()
         return
     
-    # Cannot move to a pending position
-    if pending_balls[col][row]:
-        return
-
     if is_selected:
+        # Cannot move to a pending position
+        if pending_balls[col][row]:
+            return
+
+        # Cannot move to a position that's not reachable
+        reachable = getReachableTileMap(selected_position)
+        if reachable[col][row] == 0:
+            return
+
         # Moving the selected ball to the new position
-        balls[col][row] = balls[selected_ball[0]][selected_ball[1]]
-        balls[selected_ball[0]][selected_ball[1]] = 0
+        balls[col][row] = balls[selected_position[0]][selected_position[1]]
+        balls[selected_position[0]][selected_position[1]] = 0
         is_selected = False
 
         ballsRemoved = removeAlignedBalls()

@@ -28,7 +28,7 @@ while 1:
 
     timeCounter += 1
     if gameState.is_selected:
-        graphics.animateSelectedBall(gameState.balls, gameState.selected_ball, timeCounter)
+        graphics.animateSelectedBall(gameState.balls, gameState.selected_position, timeCounter)
         
 
     pygame.time.wait(100)
