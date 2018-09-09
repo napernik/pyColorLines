@@ -3,11 +3,11 @@ import math, random
 square_count = 9
 ball_color_count = 6
 
-def getEmptySquareMatrix(size):
+def get_empty_square_matrix(size):
      return [[0 for i in range(size)] for i in range(size)]
 
-balls = getEmptySquareMatrix(square_count)
-pending_balls =  getEmptySquareMatrix(square_count)
+balls = get_empty_square_matrix(square_count)
+pending_balls =  get_empty_square_matrix(square_count)
 
 is_selected = False
 selected_position = (-1, -1)
@@ -16,8 +16,8 @@ score=0
 
 isGameOver = False
 
-# 0 points for less than 5 balls, 5 for 5, 7 for 6, 10 for 7, 14 for 8
-def getRewardScore(sequenceLength): 
+def get_reward_score(sequenceLength): 
+    "0 points for less than 5 balls, 5 for 5, 7 for 6, 10 for 7, 14 for 8"
     if sequenceLength < 5:
         return 0
     
@@ -25,7 +25,7 @@ def getRewardScore(sequenceLength):
     return 4 + (1 + rewardableBalls) * rewardableBalls // 2; 
 
 
-def addRandomBalls(quantity, pendingBallsQuantity):
+def add_random_balls(quantity, pendingBallsQuantity):
     freePositions = []
     for col in range(square_count):
         for row in range(square_count):
@@ -60,7 +60,7 @@ def consume_consequent_balls(startPosition, getNextPosition, balls_to_remove):
         nextPosition = getNextPosition(position)
         isLastStep = nextPosition[0] >= square_count or nextPosition[1] >= square_count or nextPosition[0] < 0 or nextPosition[1] < 0
         if currentColor != sequenceColor or isLastStep:
-            reward = getRewardScore(len(sequence))
+            reward = get_reward_score(len(sequence))
             if reward > 0:
                 score += reward
                 for pos in sequence:
@@ -73,9 +73,9 @@ def consume_consequent_balls(startPosition, getNextPosition, balls_to_remove):
         
         position = nextPosition
 
-def removeAlignedBalls():
-    # Remove aligned 5+ balls and update score
-    balls_to_remove = getEmptySquareMatrix(square_count)
+def remove_aligned_balls():
+    "Removes aligned 5+ balls and updates the score."
+    balls_to_remove = get_empty_square_matrix(square_count)
 
 
     # Vertical rows
@@ -90,15 +90,15 @@ def removeAlignedBalls():
     getNextPosition = lambda position : (position[0] + 1, position[1] + 1)
     for col in range(square_count):
         consume_consequent_balls((col, 0), getNextPosition, balls_to_remove)
-    for row in range(square_count - 1):
-        consume_consequent_balls((0, row + 1), getNextPosition, balls_to_remove)
+    for row in range(1, square_count):
+        consume_consequent_balls((0, row), getNextPosition, balls_to_remove)
 
     # Down-Left diagonal
     getNextPosition = lambda position : (position[0] - 1, position[1] + 1)
     for col in range(square_count):
         consume_consequent_balls((col, 0), getNextPosition, balls_to_remove)
-    for row in range(square_count - 1):
-        consume_consequent_balls((square_count - 1, row + 1), getNextPosition, balls_to_remove)            
+    for row in range(1, square_count):
+        consume_consequent_balls((square_count - 1, row), getNextPosition, balls_to_remove)            
 
     totalConsumed = 0
     for col in range(square_count):
@@ -109,7 +109,7 @@ def removeAlignedBalls():
 
     return totalConsumed
 
-def materializePendingBalls():
+def materialize_pending_balls():
     for col in range(square_count):
         for row in range(square_count):
             color = pending_balls[col][row]
@@ -117,8 +117,8 @@ def materializePendingBalls():
                 balls[col][row] = color
                 pending_balls[col][row] = 0
 
-def getReachableTileMap(position):
-    reachableTiles = getEmptySquareMatrix(square_count)
+def get_reachable_tile_map(position):
+    reachableTiles = get_empty_square_matrix(square_count)
     expanded = True
     reachableTiles[position[0]][position[1]] = 1
     while expanded:
@@ -135,7 +135,7 @@ def getReachableTileMap(position):
                     expanded = True
     return reachableTiles
 
-def onTileClick(col, row, redrawFunc):
+def on_tile_click(col, row, redrawFunc):
     global is_selected
     global selected_position
     global isGameOver
@@ -152,7 +152,7 @@ def onTileClick(col, row, redrawFunc):
             return
 
         # Cannot move to a position that's not reachable
-        reachable = getReachableTileMap(selected_position)
+        reachable = get_reachable_tile_map(selected_position)
         if reachable[col][row] == 0:
             return
 
@@ -161,18 +161,18 @@ def onTileClick(col, row, redrawFunc):
         balls[selected_position[0]][selected_position[1]] = 0
         is_selected = False
 
-        ballsRemoved = removeAlignedBalls()
+        ballsRemoved = remove_aligned_balls()
 
         if ballsRemoved == 0:
-            materializePendingBalls()
-            ballsRemoved = removeAlignedBalls()
+            materialize_pending_balls()
+            ballsRemoved = remove_aligned_balls()
 
             if ballsRemoved == 0:
                 # If nothing is removed - adding new pending balls
-                freeTilesLeft = addRandomBalls(0, 3)
+                freeTilesLeft = add_random_balls(0, 3)
                 if freeTilesLeft == 0:
-                    materializePendingBalls()
-                    ballsRemoved = removeAlignedBalls()
+                    materialize_pending_balls()
+                    ballsRemoved = remove_aligned_balls()
 
                     if ballsRemoved == 0:
                         # When there're no available moves -> Game Over!
