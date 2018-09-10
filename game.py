@@ -27,10 +27,13 @@ while running:
         if event.type == pygame.QUIT: 
             running = False
         elif event.type == pygame.VIDEORESIZE:
+            newSize = event.dict['size']
+            adjustedSize = graphics.recalculateProportions(*newSize)
+            graphics.init()
             redraw()
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
-                graphics.check_board_click(event.pos[0], event.pos[1], on_tile_click) 
+                graphics.check_board_click(*event.pos, on_tile_click) 
 
     timeCounter += 1
     if gameState.is_selected:
