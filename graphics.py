@@ -1,10 +1,10 @@
 import sys, math, pygame
+from gameconfig import *
 
 screen = None
 
 square_side = 38
 ball_radius = 13
-square_count = 9
 
 ball_diagonal_offset = -2
 shadow_animation_movement_range = 5
@@ -16,8 +16,8 @@ pending_ball_image_offset = (square_side - pending_ball_image_size) / 2 - ball_d
 grid_left = 30
 grid_top = 50
 
-grid_right = grid_left + square_side * square_count
-grid_bottom = grid_top + square_side * square_count
+grid_right = grid_left + square_side * TILES_COUNT
+grid_bottom = grid_top + square_side * TILES_COUNT
 
 grid_right_margin = 30
 grid_bottom_margin = 30
@@ -32,7 +32,7 @@ scoreCoords = (30, 5)
 
 def init():
     global screen
-    screen = pygame.display.set_mode(screen_size)
+    screen = pygame.display.set_mode(screen_size, pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.RESIZABLE)
 
 
 background_color = 200, 200, 200
@@ -91,8 +91,8 @@ def draw_tile(col, row, ball_color, shadowOffset, isPendingBall = False):
 
 def draw_scene(gameState):
     screen.fill(background_color)
-    for col in range(square_count):
-        for row in range(square_count):
+    for col in range(TILES_COUNT):
+        for row in range(TILES_COUNT):
             ball_color = gameState.balls[col][row]
             pending_ball_color = gameState.pending_balls[col][row]
             if pending_ball_color > 0:

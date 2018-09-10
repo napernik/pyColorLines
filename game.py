@@ -1,12 +1,13 @@
 import sys, math, pygame
 import graphics, gameState
+from gameconfig import *
 
 pygame.init()
 graphics.init()
 
-pygame.display.set_caption('Color Lines')
+pygame.display.set_caption(WINDOW_CAPTION)
 
-gameState.add_random_balls(5, 3)
+gameState.add_random_balls(STARTING_AMOUNT_OF_BALLS, NEW_PENDING_BALLS_PER_TURN)
 
 def redraw():
     graphics.draw_scene(gameState)
@@ -20,10 +21,14 @@ redraw()
 timeCounter = 0
 
 # Event loop
-while 1:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT: sys.exit()
-        if event.type == pygame.MOUSEBUTTONDOWN:
+running = True
+while running:
+    for event in pygame.event.get():  
+        if event.type == pygame.QUIT: 
+            running = False
+        elif event.type == pygame.VIDEORESIZE:
+            redraw()
+        elif event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
                 graphics.check_board_click(event.pos[0], event.pos[1], on_tile_click) 
 
@@ -33,3 +38,5 @@ while 1:
         
 
     pygame.time.wait(100)
+
+sys.exit()
