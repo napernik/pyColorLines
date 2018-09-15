@@ -17,20 +17,32 @@ Objective:
 - Score as many points as possible before there are no available moves left.
 
 
+How to Run (Windows 10):
+ 
+Download a zip archive from the Releases on GitHub
 
-Run (with Python installed)
+
+How to run with Python:
 
 1) Install python
-2) Install pygame module via pip
+2) Install pygame via pip
 3) Check out GIT repo
-4) Run
-  py .\game.py 
+4) py .\game.py 
 
 
-Run (without Python, Windows):
- 
-Executables coming soon...  
-  
+
+How to build an executable on Windows:
+
+1) Install Visuall C++ Build Tools
+2) Install cx_freeze module from https://www.lfd.uci.edu/~gohlke/pythonlibs/#cx_freeze
+3) Create an environment variables TCL_LIBRARY/TK_LIBRARY and point it to: 
+
+set TCL_LIBRARY=C:\Program Files\Python37\tcl\tcl8.6
+set TK_LIBRARY=C:\Program Files\Python37\tcl\tk8.6
+
+4) py .\build.py build
+4.1) If the game doesn't work, apply a patch for the cx_Freeze,
+https://github.com/anthony-tuininga/cx_Freeze/pull/395/commits/76542754e01d2d4b21c6744c563dda8d5c72b3b2/  
 
 
 Made by: Dmitry Dzygin
